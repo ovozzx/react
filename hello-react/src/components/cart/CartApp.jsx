@@ -14,6 +14,7 @@ export default function CartApp() {
   const [cart, setCart] = useState([]);
 
   const itemRef = useRef();
+  // const stockRef = useRef();
 
   const onMoveHandler = (data) => {
     //console.log(event.currentTarget);
@@ -25,13 +26,15 @@ export default function CartApp() {
     // const movedItem = items.find((item) => item.name === name);
     // console.log(movedItem);
 
-    var rst = stock - 1;
     // 재고 업데이트
     setItems((prevItems) => {
       const newItems = prevItems.map((item) => {
-        console.log("~~~~~", data.itemId, rst);
+        console.log("~~~~~", data.itemId, item.stock);
         if (item.id === data.itemId) {
-          setStock(rst);
+          // let stock = item.stock - 1; // 별도의 변수에 넣어줌, 이러면 1씩 감소
+          item.stock--;
+          console.log("if 안 : ", data.itemId, item.stock);
+          // TODO : 재고 0미만일 때 처리
           return {
             ...item, // 객체를 펼침
             stock: stock,

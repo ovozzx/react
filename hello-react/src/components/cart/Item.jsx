@@ -11,6 +11,7 @@ export default function Item({
   const onDataHandler = () => {
     onMoveHandler({ itemId, name, price, stock });
   };
+  // 품절이면 경고 모달, 일반이면 원래함수
   return (
     <>
       <ul ref={itemRef}>
@@ -18,7 +19,9 @@ export default function Item({
         <li>{name}</li>
         <li>단가 {price}</li>
         <li>재고 {stock}</li>
-        <button onClick={onDataHandler}>장바구니 담기</button>
+        <button onClick={onDataHandler}>
+          {stock > 0 ? "장바구니 담기" : "품절"}
+        </button>
       </ul>
     </>
   );

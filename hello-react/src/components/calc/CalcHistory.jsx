@@ -1,27 +1,15 @@
-import { useRef } from "react";
-import CalModal from "./CalModal";
-
-export default function CalcHistory({ history }) {
-  console.log("계산이력 ", history);
-  const clickRef = useRef();
-
-  const onClickHistoryHandler = () => {
-    clickRef.current.open();
-  };
-
+export default function CalcHistory({ history, onModal }) {
   return (
     <>
-      <ol className="calc-history">
+      {/* 괄호,, */}
+      <ol>
         계산이력
-        {history.map(({ a, b, operator, result, id }) => (
-          <li key={id} onClick={onClickHistoryHandler}>
-            {a} {operator} {b} = {result}
+        {history.map((item) => (
+          <li key={item.id} onClick={() => onModal(item.id)}>
+            {item.a} {item.oper} {item.b} = {item.rst}
           </li>
         ))}
       </ol>
-      <CalModal clickRef={clickRef}>
-        
-        <CalModal/>
     </>
   );
 }

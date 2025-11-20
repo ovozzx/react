@@ -1,39 +1,56 @@
-import Calculator from "./Calculator.jsx";
-import CalcHistory from "./CalcHistory.jsx";
-import { useState, useRef } from "react";
+import { useState } from "react";
+import Calculator from "./Calculator";
+import CalcHistory from "./CalcHistory";
 
-export default function CalcApp() {
+export default function CalApp() {
+  const [a, setA] = useState();
+  const [oper, setOper] = useState();
+  const [b, setB] = useState();
+  const [result, setResult] = useState(0);
   const [history, setHistory] = useState([]);
-  const aRef = useRef();
-  const operatorRef = useRef();
-  const bRef = useRef();
+  const [record, setRecord] = useState({});
+  const [show, setShow] = useState(false);
 
-  const onAddHistoryHandler = (a, b, operator, result) => {
-    setHistory((prevHistory) => {
-      const newHistory = [
-        {
-          a,
-          b,
-          operator,
-          result,
-          id: `history_${prevHistory.length + 1}`,
-          done: false,
-        },
-        ...prevHistory,
+  const onCalulatorHandler = (a, oper, b) => {
+    let rst = 0;
+    if (oper == "+") rst = a + b;
+    if (oper == "-") rst = a - b;
+    if (oper == "x") rst = a * b;
+    if (oper == "/") rst = a / b;
+
+    setA(a);
+    setOper(oper);
+    setB(b);
+    setResult(rst);
+
+    setHistory((prevList) => {
+      const newList = [
+        { id: `${prevList.length + 1}`, a, oper, b, rst },
+        ...prevList,
       ];
-      return newHistory;
+      return newList;
     });
   };
-  console.log(history);
+
+  const onClickModalHandler = (id) => {
+    const record = history.find((item) => item.id == id);
+    setRecord(record);
+    console.log("클릭");
+    setShow(true);
+  };
+
+  const modalStyle = {
+    display: show ? "block" : "none",
+  };
+
   return (
     <>
-      <Calculator
-        aRef={aRef}
-        operatorRef={operatorRef}
-        bRef={bRef}
-        onSave={onAddHistoryHandler}
-      />
-      <CalcHistory history={history} />
+      <Calculator onGetHandler={onCalulatorHandler} />
+      <CalcHistory history={history} onModal={onClickModalHandler} />
+      <div style={modalStyle}>
+        <section onClick={() => setShow(false)}>X</section>
+        {record.a} {record.oper} {record.b} = {record.rst}
+      </div>
     </>
   );
 }

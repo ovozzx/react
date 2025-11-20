@@ -1,4 +1,6 @@
 import TodoList from "./components/todo/TodoList.jsx";
+import TodoProvider from "./contexts/TodoContextProvider.jsx";
+// import TodoProvider from "./contexts/TodoContextProvider.jsx";
 // import { useEffect, useRef, useState } from "react";
 // import Alert from "./components/ui/Modal.jsx";
 
@@ -14,7 +16,10 @@ function App() {
   return (
     <div className="wrapper">
       <header>React Todo</header>
-      <TodoList />
+      <TodoProvider>
+        <TodoList />
+      </TodoProvider>
+      {/* 이렇게 하면 TodoList 이하에 있는 애들은 모두 state 구독 가능해짐 */}
       {/* <button type="button" onClick={onButtonClickHandler}>
         Show Modal
       </button> */}

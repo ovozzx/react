@@ -3,29 +3,27 @@ import { createPortal } from "react-dom";
 
 /**
  * 논리 연산자 - 빠른 연산.
- * && => 앞의 피 연산자 값이 false면 뒤의 피 연산자는 실행하지 않는다 또는 판단하지 않는다.
- * || => 앞의 피 연산자 값이 true면 뒤의 피 연산자는 실행하지 않는다 또는 판단하지 않는다.
+ *  && ==> 앞의 피 연산자 값이 false면 뒤의 피 연산자는 실행하지 않는다 또는 판단하지 않는다.
+ *  || ==> 앞의 피 연산자 값이 true면 뒤의 피 연산자는 실행하지 않는다 또는 판단하지 않는다.
  */
+
 export default function Alert({ children, alertRef, onClose }) {
   const modalRef = useRef();
 
-  useImperativeHandle(
-    alertRef, // alertRef에 객체가 들어감
-    () => ({
-      open() {
-        modalRef.current.showModal();
-      },
-      close() {
-        modalRef.current.close();
-      },
-    }) // ({}) => 객체 반환
-  );
+  useImperativeHandle(alertRef, () => ({
+    open() {
+      modalRef.current.showModal();
+    },
+    close() {
+      modalRef.current.close();
+    },
+  }));
 
   const onCloseClickHandler = () => {
     alertRef.current.close();
     onClose();
   };
-  // default는 한번만 씀
+
   return (
     <>
       {createPortal(
@@ -46,10 +44,10 @@ export default function Alert({ children, alertRef, onClose }) {
   );
 }
 
-export function Confirm({ confirmRef, children, onClickOK, onClickCancle }) {
+export function Confirm({ confirmRef, children, onClickOk, onClickCancel }) {
   const modalRef = useRef();
 
-  const [show, setShow] = useState(false); // div 상태 제어
+  const [show, setShow] = useState(false);
 
   useImperativeHandle(confirmRef, () => ({
     open() {
@@ -58,18 +56,18 @@ export function Confirm({ confirmRef, children, onClickOK, onClickCancle }) {
     close() {
       setShow(false);
     },
-  })); // 객체를 반환시키는 함수
+  }));
 
   const confirmStyle = {
     display: show ? "block" : "none",
-    backgoroundColor: "#fff",
+    backgroundColor: "#fff",
     position: "fixed",
     minWidth: "10rem",
   };
 
   const onCloseClickHandler = () => {
     confirmRef.current.close();
-    onClickCancle();
+    onClickCancel();
   };
 
   return (
@@ -84,11 +82,8 @@ export function Confirm({ confirmRef, children, onClickOK, onClickCancle }) {
               X
             </section>
             {children}
-            <section
-            // className="modal-close-button"
-            // onClick={onCloseClickHandler}
-            >
-              <button type="button" className="confirm-ok" onClick={onClickOK}>
+            <section>
+              <button type="button" className="confirm-ok" onClick={onClickOk}>
                 OK
               </button>
               <button
@@ -96,7 +91,7 @@ export function Confirm({ confirmRef, children, onClickOK, onClickCancle }) {
                 className="confirm-cancel"
                 onClick={onCloseClickHandler}
               >
-                Cancle
+                Cancel
               </button>
             </section>
           </div>
