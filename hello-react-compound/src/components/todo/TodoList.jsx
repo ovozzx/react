@@ -1,9 +1,17 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Confirm } from "../ui/Modal";
 
 const TodoListContext = createContext();
 
 export default function TodoList({ children }) {
+  console.log("-- -- TodoList.jsx 실행됨");
   const contextAction = { componentName: "TodoList" };
 
   return (
@@ -13,8 +21,11 @@ export default function TodoList({ children }) {
   );
 }
 
-TodoList.Header = function TodoListHeader({ children }) {
-  const context = useContext(TodoListContext);
+TodoList.Header = memo(function TodoListHeader({ count, children }) {
+  //
+  // children이 바뀌지 않는 이상, Header는 재실행 안됨
+  console.log("-- -- -- TodoList.Header 실행됨");
+  const context = useContext(TodoListContext); // 있으면 재실행됨 memo 무시
 
   if (!context) {
     // throw new Error("Header가 잘못된 위치에서 사용되었습니다."); // 페이지 자체가 안 나옴
@@ -22,16 +33,23 @@ TodoList.Header = function TodoListHeader({ children }) {
   }
 
   return (
-    <li className="task-header">
-      {children}
-      <label htmlFor="checkall">Task</label>
-      <span className="due-date">Due Date</span>
-      <span className="priority">Priority</span>
-    </li>
+    <>
+      <li className="tasks-counter">
+        <div>전체 {count.all} 개</div>
+        <div>완료 {count.done} 개</div>
+        <div>진행중 {count.process} 개</div>
+      </li>
+      <li className="task-header">
+        {children}
+        <label htmlFor="checkall">Task</label>
+        <span className="due-date">Due Date</span>
+        <span className="priority">Priority</span>
+      </li>
+    </>
   );
-};
+});
 
-TodoList.Item = function TodoItem({
+TodoList.Item = memo(function TodoItem({
   id,
   task,
   dueDate,
@@ -39,6 +57,7 @@ TodoList.Item = function TodoItem({
   done,
   onDone,
 }) {
+  console.log("-- -- -- TodoList.Item 실행됨");
   const confirmRef = useRef();
 
   const [showConfirm, setShowConfirm] = useState(false);
@@ -62,12 +81,12 @@ TodoList.Item = function TodoItem({
     setShowConfirm(false);
   };
 
-  const context = useContext(TodoListContext);
+  // const context = useContext(TodoListContext);
 
-  if (!context) {
-    // throw new Error("Item 잘못된 위치에서 사용되었습니다."); // 페이지 자체가 안 나옴
-    return <li>잘못된 사용 방법입니다.</li>; // 페이지는 나오게, 헤더에 에러 출력
-  }
+  // if (!context) {
+  //   // throw new Error("Item 잘못된 위치에서 사용되었습니다."); // 페이지 자체가 안 나옴
+  //   return <li>잘못된 사용 방법입니다.</li>; // 페이지는 나오게, 헤더에 에러 출력
+  // }
 
   return (
     <>
@@ -100,4 +119,4 @@ TodoList.Item = function TodoItem({
       )}
     </>
   );
-};
+});

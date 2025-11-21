@@ -7,6 +7,7 @@ export default function Calculator({ onGetHandler }) {
 
   const onBtnClickHandler = () => {
     onGetHandler(Number(a), oper, Number(b));
+    // 파라미터 순서로 구분됨, 파라미터명은 상관 없음
   };
 
   return (

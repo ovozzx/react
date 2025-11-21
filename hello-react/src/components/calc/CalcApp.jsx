@@ -12,6 +12,7 @@ export default function CalApp() {
   const [show, setShow] = useState(false);
 
   const onCalulatorHandler = (a, oper, b) => {
+    // 파라미터 순서로 구분됨, 파라미터명은 상관 없음
     let rst = 0;
     if (oper == "+") rst = a + b;
     if (oper == "-") rst = a - b;
@@ -41,6 +42,16 @@ export default function CalApp() {
 
   const modalStyle = {
     display: show ? "block" : "none",
+    backgroundColor: "white",
+    zIndex: "9999",
+    position: "fixed",
+    left: "85px",
+    top: "44px",
+    width: "200px",
+    height: "87px",
+    textAlign: "center",
+    border: "1px solid #ccc",
+    padding: "10px",
   };
 
   return (
@@ -48,7 +59,9 @@ export default function CalApp() {
       <Calculator onGetHandler={onCalulatorHandler} />
       <CalcHistory history={history} onModal={onClickModalHandler} />
       <div style={modalStyle}>
-        <section onClick={() => setShow(false)}>X</section>
+        <section style={{ textAlign: "right" }} onClick={() => setShow(false)}>
+          X
+        </section>
         {record.a} {record.oper} {record.b} = {record.rst}
       </div>
     </>

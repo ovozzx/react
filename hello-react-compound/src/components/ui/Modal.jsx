@@ -8,6 +8,7 @@ import { createPortal } from "react-dom";
  */
 
 export default function Alert({ children, alertRef, onClose }) {
+  console.log("-- Alert 실행됨");
   const modalRef = useRef();
 
   useImperativeHandle(alertRef, () => ({
@@ -45,6 +46,7 @@ export default function Alert({ children, alertRef, onClose }) {
 }
 
 export function Confirm({ confirmRef, children, onClickOk, onClickCancel }) {
+  console.log("-- Confirm 실행됨");
   const modalRef = useRef();
 
   const [show, setShow] = useState(false);

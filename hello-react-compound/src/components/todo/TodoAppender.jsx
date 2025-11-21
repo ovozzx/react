@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import Alert from "../ui/Modal.jsx";
 
-export default function TodoAppender({ onSave }) {
-  console.log("TodoAppender 실행 됨!");
+// 코드 보기
+// const isEmpty = (valueRef, message, setter) => {
+//     return valueRef.current.value === "";
+// };
+
+export default memo(function TodoAppender({ onSave }) {
+  console.log("-- -- TodoAppender 실행됨");
 
   const [alertMessage, setAlertMessage] = useState();
 
@@ -22,18 +27,25 @@ export default function TodoAppender({ onSave }) {
     setAlertMessage(undefined);
   };
 
+  const isEmpty = (valueRef) => {
+    return valueRef.current.value === "";
+  }; // 이 함수로 하위 여러개에 모두 전달된다고 생각하면....
+  // => (1) ref에 넣기, (2) 컴포넌트 내부보다 컴포넌트 외부에 있으면 됨 (한번 만들어진걸로 쭉 씀, 메모리 안바뀜)
+  // useCallback보다 빠름 (메모리 바뀌었는지 체크하느라 성능 하락)
+
   const onButtonClickHandler = () => {
-    if (taskRef.current.value === "") {
+    if (isEmpty(taskRef)) {
+      // isEmpty(taskRef, "Todo명을 입력하세요.", setAlertMessage)
       setAlertMessage("Todo명을 입력하세요.");
       return;
     }
 
-    if (dueDateRef.current.value === "") {
+    if (isEmpty(dueDateRef)) {
       setAlertMessage("기한을 선택하세요.");
       return;
     }
 
-    if (priorityRef.current.value === "") {
+    if (isEmpty(priorityRef)) {
       setAlertMessage("우선순위를 선택하세요.");
       return;
     }
@@ -70,4 +82,4 @@ export default function TodoAppender({ onSave }) {
       )}
     </footer>
   );
-}
+});
