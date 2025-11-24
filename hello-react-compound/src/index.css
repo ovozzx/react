@@ -191,3 +191,7 @@ button.confirm-cancel {
   gap: 0.625rem;
   justify-content: center;
 }
+
+.main-container nav.menu-navigation > ul > li.active {
+  color: #f00;
+}

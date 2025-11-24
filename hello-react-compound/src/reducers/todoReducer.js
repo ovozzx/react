@@ -19,7 +19,8 @@ export default function taskReducer(state, action) {
 
   // type에 따라서 state를 변경하는 코드..
   if (type === actions.init) {
-    return [...state, ...payload];
+    // return [...state, ...payload]; // 이렇게 하면 id 123 123 이런식으로 들어옴 (기존 state에 추가되는듯)
+    return [...payload];
   } else if (type === actions.add) {
     const newList = [
       ...state, // prevList를 state로 씀
@@ -27,7 +28,7 @@ export default function taskReducer(state, action) {
         task: payload.taskName, // 객체 value는 payload.key 명으로 적어줌
         dueDate: payload.dueDate,
         priority: payload.priority,
-        id: `todo_${state.length + 1}`,
+        id: payload.taskId,
         done: false,
       },
     ];

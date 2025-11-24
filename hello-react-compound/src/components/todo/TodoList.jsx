@@ -95,6 +95,8 @@ TodoList.Item = memo(function TodoItem({
           id={id}
           type="checkbox"
           checked={done}
+          disabled={done}
+          // done 처리 못 풀도록 설정
           onChange={onShowConfirmHandler}
         />
         <label htmlFor={id} className={`${done ? "done-todo" : ""}`}>
