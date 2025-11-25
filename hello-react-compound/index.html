@@ -5,8 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>hello-react</title>
+    <script type="text/javascript">
+      // 이 함수들은 window에 붙어있음
+      function showSpinner() {
+        document.querySelector("#spinner").showModal();
+      }
+      function hideSpinner() {
+        document.querySelector("#spinner").close();
+      }
+    </script>
   </head>
   <body>
+    <dialog id="spinner">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif"
+      />
+    </dialog>
     <div id="modals"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

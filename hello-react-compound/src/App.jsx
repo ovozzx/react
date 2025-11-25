@@ -2,6 +2,7 @@ import { useState } from "react";
 import TodoApp from "./components/todo/TodoApp";
 import Navigation from "./navigation/Navigation";
 import ArticleApp from "./components/article/ArticleApp";
+import UserContextProvider from "./contexts/UserContextProvider";
 
 export default function App() {
   const [component, setComponent] = useState("TODO");
@@ -13,7 +14,11 @@ export default function App() {
         <Navigation activeComponent={component} onClick={setComponent} />
       </header>
       {component === "TODO" && <TodoApp />}
-      {component === "ARTICLE" && <ArticleApp />}
+      {component === "ARTICLE" && (
+        <UserContextProvider>
+          <ArticleApp />
+        </UserContextProvider>
+      )}
     </div>
   );
 }

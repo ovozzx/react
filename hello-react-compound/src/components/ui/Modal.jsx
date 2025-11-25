@@ -28,7 +28,7 @@ export default function Alert({ children, alertRef, onClose }) {
   return (
     <>
       {createPortal(
-        <dialog className="modal" ref={modalRef}>
+        <dialog className="modal" ref={modalRef} onClose={onClose}>
           <div className="modal-body">
             <section
               className="modal-close-button"
@@ -45,7 +45,13 @@ export default function Alert({ children, alertRef, onClose }) {
   );
 }
 
-export function Confirm({ confirmRef, children, onClickOk, onClickCancel }) {
+export function Confirm({
+  confirmRef,
+  children,
+  onClickOk,
+  onClickCancel,
+  doNotMove = false,
+}) {
   console.log("-- Confirm 실행됨");
   const modalRef = useRef();
 
@@ -72,34 +78,32 @@ export function Confirm({ confirmRef, children, onClickOk, onClickCancel }) {
     onClickCancel();
   };
 
-  return (
-    <>
-      {createPortal(
-        <div className="modal" ref={modalRef} style={confirmStyle}>
-          <div className="modal-body">
-            <section
-              className="modal-close-button"
-              onClick={onCloseClickHandler}
-            >
-              X
-            </section>
-            {children}
-            <section>
-              <button type="button" className="confirm-ok" onClick={onClickOk}>
-                OK
-              </button>
-              <button
-                type="button"
-                className="confirm-cancel"
-                onClick={onCloseClickHandler}
-              >
-                Cancel
-              </button>
-            </section>
-          </div>
-        </div>,
-        document.querySelector("#modals")
-      )}
-    </>
+  const dialog = (
+    <div className="modal" ref={modalRef} style={confirmStyle}>
+      <div className="modal-body">
+        <section className="modal-close-button" onClick={onCloseClickHandler}>
+          X
+        </section>
+        {children}
+        <section>
+          <button type="button" className="confirm-ok" onClick={onClickOk}>
+            OK
+          </button>
+          <button
+            type="button"
+            className="confirm-cancel"
+            onClick={onCloseClickHandler}
+          >
+            Cancel
+          </button>
+        </section>
+      </div>
+    </div>
   );
+
+  if (doNotMove) {
+    return dialog;
+  }
+
+  return <>{createPortal(dialog, document.querySelector("#modals"))}</>;
 }
