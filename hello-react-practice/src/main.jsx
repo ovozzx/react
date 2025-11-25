@@ -6,9 +6,14 @@ import CalcApp from "./components/calc/CalcApp.jsx";
 // import PropsApp from "./components/PropsApp.jsx";
 import CartApp from "./components/cart/CartApp.jsx";
 import Parent from "./pratice/useImperative/Parent.jsx";
+import Portal from "./pratice/portals/Portal.jsx";
+import ContextApp from "./pratice/context/ContextApp.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Parent />
+    <ContextApp />
+    <Portal />
+    {/* <Portal /> 이렇게 호출하거나 부모를 호출! */}
   </StrictMode>
 );
