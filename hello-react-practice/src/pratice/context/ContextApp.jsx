@@ -9,32 +9,41 @@
  * --- 상태, 테마, 로그인 정보 등 공유용으로 자주 사용
  */
 
+// 여러 개의 <MyContext.Provider>가 중첩되면, 가장 가까운 Provider의 value가 적용됩니다.
+// 값을 받는 자식 컴포넌트 기준으로 가장 가까운 Provider의 value가 적용됩니다.
+
 import { createContext, useContext } from "react";
 
-const MyContext = createContext(); // 바깥에 선언
-
-function GreatGrandchild() {
-  const value = useContext(MyContext); // 직접 Context 접근
-  return <div>GreatGrandchild: {value}</div>;
-}
-
-function MiddleChild() {
-  // 값이 안 거침
-  return (
-    <div>
-      <p>MiddleChild</p>
-      <GreatGrandchild />
-    </div>
-  );
-}
+const MyContext = createContext();
 
 export default function ContextApp() {
   return (
-    <MyContext.Provider value="컨텍스트 예제 입니다.">
-      <div>
-        <p>Parent</p>
-        <MiddleChild /> {/* MiddleChild는 Context 값 몰라도 됨 */}
-      </div>
-    </MyContext.Provider>
+    <>
+      <MyContext.Provider value="컨텍스트 예제 입니다">
+        <div>---</div>
+        <MiddleChild />
+      </MyContext.Provider>
+    </>
+  );
+}
+
+function MiddleChild() {
+  return (
+    <>
+      <MyContext.Provider value="컨텍스트 예제 입니다2">
+        <div>------MiddleChild</div>
+        <GrandChild />
+      </MyContext.Provider>
+    </>
+  );
+}
+
+function GrandChild() {
+  const value = useContext(MyContext);
+  return (
+    <>
+      <div>---------GrandChild</div>
+      <div>{value}</div>
+    </>
   );
 }

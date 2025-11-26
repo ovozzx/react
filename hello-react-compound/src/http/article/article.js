@@ -1,8 +1,8 @@
 import js from "@eslint/js";
 
 export const fetchGetArticles = async (pageNo = 0) => {
-  window.showSpinner();
-  const articleResponse = await fetch(
+  // window.showSpinner(); // 에러 발생하면 안 꺼짐
+  const fetchResult = await fetch(
     `http://192.168.211.25:8080/api/v1/boards?pageNo=${pageNo}&listSize=20`,
     {
       method: "get",
@@ -11,13 +11,22 @@ export const fetchGetArticles = async (pageNo = 0) => {
       },
     }
   );
-  const articleResponseJson = await articleResponse.json();
-  window.hideSpinner();
-  return articleResponseJson; // body에는 list만 줘서 body로 받아오면 안됨 (done, ...)
+
+  if (!fetchResult.ok) {
+    throw new Error("서버와 통신에 실패했습니다.");
+  }
+
+  const json = await fetchResult.json();
+
+  if (json.error) {
+    // json.error는 객체 형태
+    throw new Error(JSON.stringify(json.error));
+  }
+  // window.hideSpinner();
+  return json; // body에는 list만 줘서 body로 받아오면 안됨 (done, ...)
 };
 
 export const fetchGetArticle = async (articleId) => {
-  window.showSpinner();
   const fetchResult = await fetch(
     `http://192.168.211.25:8080/api/v1/boards/${articleId}`,
     {
@@ -26,13 +35,20 @@ export const fetchGetArticle = async (articleId) => {
       },
     }
   );
+
+  if (!fetchResult.ok) {
+    throw new Error("서버와 통신에 실패했습니다.");
+  }
   const json = await fetchResult.json();
-  window.hideSpinner();
+
+  if (json.error) {
+    throw new Error(JSON.stringify(json.error));
+  }
+
   return json.body;
 };
 
 export const fetchPostArticle = async (subject, file, content) => {
-  window.showSpinner();
   // form data에 넣어서 보냄
   const formData = new FormData();
   formData.append("subject", subject);
@@ -50,9 +66,20 @@ export const fetchPostArticle = async (subject, file, content) => {
     body: formData, // 파일 보낼때 아니면 json으로
   });
 
+  console.log(fetchResult);
+
+  if (!fetchResult.ok) {
+    throw new Error("서버와 통신에 실패했습니다.");
+  }
   // 작성하면, 작성한 게시글 id를 돌려줌
   const json = await fetchResult.json();
-  window.hideSpinner();
+
+  console.log(json);
+
+  if (json.error) {
+    throw new Error(JSON.stringify(json.error));
+  }
+
   return json.body;
 };
 
@@ -62,14 +89,17 @@ export const fetchFileDownload = async (url) => {
   //   // responseType: "blob",
   // }); // bolb: 바이너리 타입
   // return fetchResult.blob(); // <-- Binary
-  window.showSpinner();
+
   const fetchResult = await fetch(url);
-  window.hideSpinner();
+
+  if (!fetchResult.ok) {
+    throw new Error("서버와 통신에 실패했습니다.");
+  }
+
   return fetchResult;
 };
 
 export const fetchUpdateArticle = async (modifiedArticle) => {
-  window.showSpinner();
   const fetchResult = await fetch(
     `http://192.168.211.25:8080/api/v1/boards/${modifiedArticle.id}`,
     {
@@ -82,13 +112,19 @@ export const fetchUpdateArticle = async (modifiedArticle) => {
     }
   );
 
+  if (!fetchResult.ok) {
+    throw new Error("서버와 통신에 실패했습니다.");
+  }
+
   const json = await fetchResult.json();
-  window.hideSpinner();
+
+  if (json.error) {
+    throw new Error(JSON.stringify(json.error));
+  }
   return json.body;
 };
 
 export const fetchDeleteArticle = async (id) => {
-  window.showSpinner();
   const fetchResult = await fetch(
     `http://192.168.211.25:8080/api/v1/boards/${id}`,
     {
@@ -99,7 +135,15 @@ export const fetchDeleteArticle = async (id) => {
     }
   );
 
+  if (!fetchResult.ok) {
+    throw new Error("서버와 통신에 실패했습니다.");
+  }
+
   const json = await fetchResult.json();
-  window.hideSpinner();
+
+  if (json.error) {
+    throw new Error(JSON.stringify(json.error));
+  }
+
   return json.body;
 };

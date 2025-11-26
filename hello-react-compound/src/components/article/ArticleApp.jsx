@@ -120,8 +120,26 @@ function ArticleList() {
 
   useEffect(() => {
     (async () => {
-      const fetchList = await fetchGetArticles();
-      setArticleList(fetchList);
+      window.showSpinner();
+      try {
+        const fetchList = await fetchGetArticles();
+        setArticleList(fetchList);
+      } catch (e) {
+        if (e.message.startsWith("{")) {
+          const error = JSON.parse(e.message).error;
+          let message = "";
+          for (let err of error) {
+            // for each
+            message += `${err.field} ${err.defaultMessage}`;
+            message += " ";
+          }
+          alert(message);
+        } else {
+          alert(e.message);
+        }
+      } finally {
+        window.hideSpinner();
+      }
     })();
   }, [rnd]);
   // fetch 결과 넣으러면 useEffect 넣어주기~
@@ -141,23 +159,41 @@ function ArticleList() {
             // 구독 한번만 하게함 (구독 취소 -> 다시 구독)
             observer.unobserve(loadMoreRef.current);
             (async () => {
-              const nextArticles = await fetchGetArticles(
-                articleList.nowPage + 1
-              );
-              setArticleList((prevArticles) => {
-                return {
-                  ...nextArticles,
-                  body: {
-                    // body 객체 타입
-                    count: nextArticles.count,
-                    list: [
-                      ...prevArticles.body.list,
-                      ...nextArticles.body.list,
-                    ], // append!
-                  },
-                  // done, nowPage 값 바뀔 것!
-                };
-              });
+              window.showSpinner();
+              try {
+                const nextArticles = await fetchGetArticles(
+                  articleList.nowPage + 1
+                );
+                setArticleList((prevArticles) => {
+                  return {
+                    ...nextArticles,
+                    body: {
+                      // body 객체 타입
+                      count: nextArticles.count,
+                      list: [
+                        ...prevArticles.body.list,
+                        ...nextArticles.body.list,
+                      ], // append!
+                    },
+                    // done, nowPage 값 바뀔 것!
+                  };
+                });
+              } catch (e) {
+                if (e.message.startsWith("{")) {
+                  const error = JSON.parse(e.message).error;
+                  let message = "";
+                  for (let err of error) {
+                    // for each
+                    message += `${err.field} ${err.defaultMessage}`;
+                    message += " ";
+                  }
+                  alert(message);
+                } else {
+                  alert(e.message);
+                }
+              } finally {
+                window.hideSpinner();
+              }
             })();
           }
         }
@@ -240,17 +276,35 @@ function ArticleDetail({ articleId, onClose }) {
 
   useEffect(() => {
     (async () => {
-      const articleDetail = await fetchGetArticle(articleId);
-      console.log(articleDetail);
-      setDetail(articleDetail); // 값은 같지만 메모리는 다르게 끊어줌
-      setModifyDetail({ ...articleDetail });
-      // 객체 레퍼런스 타입이라서 동일 메모리에 있는 걸 수정하면 동일하게 바뀜 => 메모리 끊어주는 거 필요
-      detailRef.current.open();
+      window.showSpinner();
+      try {
+        const articleDetail = await fetchGetArticle(articleId);
+        console.log(articleDetail);
+        setDetail(articleDetail); // 값은 같지만 메모리는 다르게 끊어줌
+        setModifyDetail({ ...articleDetail });
+        // 객체 레퍼런스 타입이라서 동일 메모리에 있는 걸 수정하면 동일하게 바뀜 => 메모리 끊어주는 거 필요
+        detailRef.current.open();
 
-      // 렌더링 끝난 상태
-      if (isDelete) {
-        deleteConfirmRef.current.open();
-        console.log("오픈!");
+        // 렌더링 끝난 상태
+        if (isDelete) {
+          deleteConfirmRef.current.open();
+          console.log("오픈!");
+        }
+      } catch (e) {
+        if (e.message.startsWith("{")) {
+          const error = JSON.parse(e.message).error;
+          let message = "";
+          for (let err of error) {
+            // for each
+            message += `${err.field} ${err.defaultMessage}`;
+            message += " ";
+          }
+          alert(message);
+        } else {
+          alert(e.message);
+        }
+      } finally {
+        window.hideSpinner();
       }
     })();
   }, [isDelete]); // articleId처럼 외부 변수 쓰면 의존 배열에 넣어줄 것을 권고
@@ -321,10 +375,28 @@ function ArticleDetail({ articleId, onClose }) {
             <button
               type="button"
               onClick={async () => {
-                const result = await fetchUpdateArticle(modifyDetail);
-                if (result) {
-                  // 수정에 성공했다면
-                  onClose(undefined);
+                window.showSpinner();
+                try {
+                  const result = await fetchUpdateArticle(modifyDetail);
+                  if (result) {
+                    // 수정에 성공했다면
+                    onClose(undefined);
+                  }
+                } catch (e) {
+                  if (e.message.startsWith("{")) {
+                    const error = JSON.parse(e.message).error;
+                    let message = "";
+                    for (let err of error) {
+                      // for each
+                      message += `${err.field} ${err.defaultMessage}`;
+                      message += " ";
+                    }
+                    alert(message);
+                  } else {
+                    alert(e.message);
+                  }
+                } finally {
+                  window.hideSpinner();
                 }
               }}
             >
@@ -345,12 +417,30 @@ function ArticleDetail({ articleId, onClose }) {
               doNotMove={true}
               confirmRef={deleteConfirmRef}
               onClickOk={async () => {
-                const deleteResult = await fetchDeleteArticle(detail?.id);
-                console.log("onClickOk");
-                if (deleteResult) {
-                  setIsDelete(false);
-                  onClose(undefined);
-                  console.log("onClickOK > deleteResult");
+                window.showSpinner();
+                try {
+                  const deleteResult = await fetchDeleteArticle(detail?.id);
+                  console.log("onClickOk");
+                  if (deleteResult) {
+                    setIsDelete(false);
+                    onClose(undefined);
+                    console.log("onClickOK > deleteResult");
+                  }
+                } catch (e) {
+                  if (e.message.startsWith("{")) {
+                    const error = JSON.parse(e.message).error;
+                    let message = "";
+                    for (let err of error) {
+                      // for each
+                      message += `${err.field} ${err.defaultMessage}`;
+                      message += " ";
+                    }
+                    alert(message);
+                  } else {
+                    alert(e.message);
+                  }
+                } finally {
+                  window.hideSpinner();
                 }
               }}
               onClickCancel={setIsDelete.bind(this, false)}
@@ -373,12 +463,32 @@ function ArticleWrite({ onPostWrite }) {
 
   const onSaveClickHandler = useCallback(async () => {
     // fetch - 글 작성.
-    const writeResult = await fetchPostArticle(
-      writeRef.current.subject.value,
-      writeRef.current.file.files[0], // 파일 1개만 보낼 것
-      writeRef.current.content.value
-    );
-    console.log(writeResult);
+    window.showSpinner();
+    try {
+      const writeResult = await fetchPostArticle(
+        writeRef.current.subject.value,
+        writeRef.current.file.files[0], // 파일 1개만 보낼 것
+        writeRef.current.content.value
+      );
+    } catch (e) {
+      if (e.message.startsWith("{")) {
+        // 객체라는 뜻 (json 형식)
+        console.log(JSON.parse(e.message));
+        const error = JSON.parse(e.message).error;
+        let message = "";
+        for (let err of error) {
+          // for each
+          message += `${err.field} ${err.defaultMessage}`;
+          message += " ";
+        }
+        alert(message);
+      } else {
+        alert(e.message);
+      }
+    } finally {
+      window.hideSpinner();
+    }
+
     onPostWrite();
   }, [onPostWrite]); // 캐싱, 캐싱시킬 기준
 

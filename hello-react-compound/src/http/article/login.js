@@ -19,6 +19,11 @@ export const fetchAccountInfo = async () => {
     },
   });
 
+  console.log(fetchResult);
+
   const json = await fetchResult.json();
+
+  console.log(json);
+
   return json.body;
 };
