@@ -1,0 +1,14 @@
+/*camel case로 써야함 (변수화될거라서 이름에 -를 넣을 수 없음)*/
+.tableList {
+  display: block;
+  border: 1px solid #ccc;
+  border-collapse: collapse;
+
+  & > thead {
+    & > tr {
+      & > th {
+        padding: 5px 10px;
+      }
+    }
+  }
+}

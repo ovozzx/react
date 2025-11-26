@@ -1,4 +1,13 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import articleListStyle from "./ArticleList.module.css";
+// css 이름 원하는대로 작성
+import {
+  useCallback,
+  useContext,
+  useDebugValue,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { fetchGetJwt } from "../../http/article/login.js";
 import {
   fetchDeleteArticle,
@@ -13,6 +22,9 @@ import { download } from "../../utills/download.js";
 import { UserContext } from "../../contexts/UserContext.jsx";
 // import { UserContextProvider } from "../../contexts/UserContextProvider.jsx";
 import { isResourceOwner } from "../../utills/resourceOwner.js";
+import { useFetch, usePagination } from "../../hooks/customHooks.js";
+import { useDispatch, useSelector } from "react-redux";
+import { actionTypes } from "../../store/redux/ReduxStore.jsx";
 
 export default function ArticleApp() {
   // 로그인.
@@ -43,7 +55,7 @@ export default function ArticleApp() {
 const onClickLoginHandler = async (loginRef, onPostLogin) => {
   const email = loginRef.email.value;
   const password = loginRef.password.value;
-  console.log(email, password);
+  //console.log(email, password);
 
   const jwt = await fetchGetJwt(email, password);
 
@@ -110,102 +122,46 @@ function Account() {
 }
 
 function ArticleList() {
+  const articles = useSelector((store) => store.articles);
+  const dispatcher = useDispatch();
+
+  //console.log(">>>>>", articleListStyle);
   const loadMoreRef = useRef();
 
   const [isWrite, setIsWrite] = useState(false);
   const [articleId, setArticleId] = useState();
-  const [articleList, setArticleList] = useState();
 
   const [rnd, setRnd] = useState(Math.random());
 
-  useEffect(() => {
-    (async () => {
-      window.showSpinner();
-      try {
-        const fetchList = await fetchGetArticles();
-        setArticleList(fetchList);
-      } catch (e) {
-        if (e.message.startsWith("{")) {
-          const error = JSON.parse(e.message).error;
-          let message = "";
-          for (let err of error) {
-            // for each
-            message += `${err.field} ${err.defaultMessage}`;
-            message += " ";
-          }
-          alert(message);
-        } else {
-          alert(e.message);
-        }
-      } finally {
-        window.hideSpinner();
-      }
-    })();
-  }, [rnd]);
+  const {
+    fetchedData,
+    error,
+    //setFetchedData: setArticles, // ??
+  } = useFetch(fetchGetArticles, 1); // rnd 바뀌면 fetch 해라 => rnd 일단 뺌
+
+  console.log("fetchedData : ", fetchedData);
   // fetch 결과 넣으러면 useEffect 넣어주기~
 
-  //console.log("결과~~~", articleList);
-
   useEffect(() => {
-    // render 끝나면 실행!
-    // Pagination : view포트 밖에 있는걸 스크롤 내렸을 때 교차하는게 있는지 감지 (브라우저 기능)
-    const observer = new IntersectionObserver((elements) => {
-      elements.forEach((elem) => {
-        if (elem.isIntersecting) {
-          // fetch next page
-          //   console.log("fetch!!");
-          if (articleList?.nowPage >= 0) {
-            // 괄호 찾기
-            // 구독 한번만 하게함 (구독 취소 -> 다시 구독)
-            observer.unobserve(loadMoreRef.current);
-            (async () => {
-              window.showSpinner();
-              try {
-                const nextArticles = await fetchGetArticles(
-                  articleList.nowPage + 1
-                );
-                setArticleList((prevArticles) => {
-                  return {
-                    ...nextArticles,
-                    body: {
-                      // body 객체 타입
-                      count: nextArticles.count,
-                      list: [
-                        ...prevArticles.body.list,
-                        ...nextArticles.body.list,
-                      ], // append!
-                    },
-                    // done, nowPage 값 바뀔 것!
-                  };
-                });
-              } catch (e) {
-                if (e.message.startsWith("{")) {
-                  const error = JSON.parse(e.message).error;
-                  let message = "";
-                  for (let err of error) {
-                    // for each
-                    message += `${err.field} ${err.defaultMessage}`;
-                    message += " ";
-                  }
-                  alert(message);
-                } else {
-                  alert(e.message);
-                }
-              } finally {
-                window.hideSpinner();
-              }
-            })();
-          }
-        }
-      });
-    });
+    dispatcher({ type: actionTypes.ARTICLE_INIT, payload: fetchedData });
+  }, [fetchedData, dispatcher]);
 
-    if (!articleList?.done) {
-      /* articleList?.done이 true (마지막 페이지)이면 loadMoreRef도 없음 (return 문 참고)
-        -> 체크 필요 (없는 걸 observe하려고 하면 에러) */
-      observer.observe(loadMoreRef.current /*target Element */);
-    }
-  }, [articleList?.nowPage, articleList?.done]); // nowPage 바뀌면 실행해라
+  //console.log("결과~~~", articleList);
+  // callback 함수쪽 재실행되어서 key 중복 현상 => 함수 캐싱
+  const paginationCallback = useCallback(
+    (fetchResult) => {
+      dispatcher({ type: actionTypes.ARTICLE_NEXT, payload: fetchResult });
+    },
+    [dispatcher]
+  );
+
+  const fetchError = usePagination(
+    loadMoreRef,
+    fetchGetArticles,
+    articles?.nowPage,
+    articles?.done,
+    paginationCallback
+  );
 
   return (
     <>
@@ -222,8 +178,8 @@ function ArticleList() {
       )}
       {!isWrite && (
         <>
-          <table>
-            <thead>
+          <table className={articleListStyle.tableList}>
+            <thead className={articleListStyle.tableList}>
               <tr>
                 <th>ID</th>
                 <th>제목</th>
@@ -232,8 +188,8 @@ function ArticleList() {
                 <th>작성시간</th>
               </tr>
             </thead>
-            <tbody>
-              {articleList?.body.list.map((item) => (
+            <tbody className={articleListStyle.tableList}>
+              {articles?.body?.list.map((item) => (
                 <tr key={item.id}>
                   <td>{item.number}</td>
                   <td onClick={setArticleId.bind(this, item.id)}>
@@ -246,7 +202,7 @@ function ArticleList() {
               ))}
             </tbody>
           </table>
-          {!articleList?.done && <div ref={loadMoreRef}>Load more...</div>}
+          {!articles?.done && <div ref={loadMoreRef}>Load more...</div>}
           {articleId && (
             <ArticleDetail
               articleId={articleId}
@@ -263,10 +219,11 @@ function ArticleList() {
 }
 
 function ArticleDetail({ articleId, onClose }) {
+  const dispatcher = useDispatch();
+
   const detailRef = useRef();
   const deleteConfirmRef = useRef();
 
-  const [detail, setDetail] = useState();
   const [modifyDetail, setModifyDetail] = useState();
 
   const [isModify, setIsModify] = useState(false);
@@ -274,41 +231,23 @@ function ArticleDetail({ articleId, onClose }) {
 
   const { account } = useContext(UserContext);
 
-  useEffect(() => {
-    (async () => {
-      window.showSpinner();
-      try {
-        const articleDetail = await fetchGetArticle(articleId);
-        console.log(articleDetail);
-        setDetail(articleDetail); // 값은 같지만 메모리는 다르게 끊어줌
-        setModifyDetail({ ...articleDetail });
-        // 객체 레퍼런스 타입이라서 동일 메모리에 있는 걸 수정하면 동일하게 바뀜 => 메모리 끊어주는 거 필요
-        detailRef.current.open();
+  const fetchArticle = useCallback(fetchGetArticle.bind(this, articleId), []);
 
-        // 렌더링 끝난 상태
-        if (isDelete) {
-          deleteConfirmRef.current.open();
-          console.log("오픈!");
-        }
-      } catch (e) {
-        if (e.message.startsWith("{")) {
-          const error = JSON.parse(e.message).error;
-          let message = "";
-          for (let err of error) {
-            // for each
-            message += `${err.field} ${err.defaultMessage}`;
-            message += " ";
-          }
-          alert(message);
-        } else {
-          alert(e.message);
-        }
-      } finally {
-        window.hideSpinner();
-      }
-    })();
-  }, [isDelete]); // articleId처럼 외부 변수 쓰면 의존 배열에 넣어줄 것을 권고
-  // props 변경되면 이 실행문도 다시 실행되어서 넣을 필요 없음
+  const { fetchedData: detail, error } = useFetch(
+    fetchArticle, // 캐싱 안하면,, 새로운 메모리 함수 => 계속 돎
+    isDelete
+  );
+
+  useEffect(() => {
+    // 객체 레퍼런스 타입이라서 동일 메모리에 있는 걸 수정하면 동일하게 바뀜 => 메모리 끊어주는 거 필요
+    setModifyDetail({ ...detail });
+    detailRef.current.open();
+
+    // 렌더링 끝난 상태
+    if (isDelete) {
+      deleteConfirmRef.current.open();
+    }
+  }, [detail, isDelete]);
 
   return (
     <Alert alertRef={detailRef} onClose={onClose.bind(this, undefined)}>
@@ -375,6 +314,10 @@ function ArticleDetail({ articleId, onClose }) {
             <button
               type="button"
               onClick={async () => {
+                dispatcher({
+                  type: actionTypes.ARTICLE_UPDATE,
+                  payload: modifyDetail,
+                });
                 window.showSpinner();
                 try {
                   const result = await fetchUpdateArticle(modifyDetail);
@@ -417,14 +360,17 @@ function ArticleDetail({ articleId, onClose }) {
               doNotMove={true}
               confirmRef={deleteConfirmRef}
               onClickOk={async () => {
+                dispatcher({
+                  type: actionTypes.ARTICLE_DELETE,
+                  payload: { id: detail?.id },
+                });
                 window.showSpinner();
                 try {
                   const deleteResult = await fetchDeleteArticle(detail?.id);
-                  console.log("onClickOk");
+
                   if (deleteResult) {
                     setIsDelete(false);
                     onClose(undefined);
-                    console.log("onClickOK > deleteResult");
                   }
                 } catch (e) {
                   if (e.message.startsWith("{")) {
@@ -473,7 +419,7 @@ function ArticleWrite({ onPostWrite }) {
     } catch (e) {
       if (e.message.startsWith("{")) {
         // 객체라는 뜻 (json 형식)
-        console.log(JSON.parse(e.message));
+        //console.log(JSON.parse(e.message));
         const error = JSON.parse(e.message).error;
         let message = "";
         for (let err of error) {

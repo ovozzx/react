@@ -8,11 +8,15 @@ import CartApp from "./components/cart/CartApp.jsx";
 import Parent from "./pratice/useImperative/Parent.jsx";
 import Portal from "./pratice/portals/Portal.jsx";
 import ContextApp from "./pratice/context/ContextApp.jsx";
+import CombineApp from "./pratice/combine/child.jsx";
+import Counter from "./pratice/reducer/Reducer.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Parent />
     <ContextApp />
+    <CombineApp />
+    <Counter />
     <Portal />
     {/* <Portal /> 이렇게 호출하거나 부모를 호출! */}
   </StrictMode>
