@@ -1,4 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
+import {
+  fetchDeleteArticle,
+  fetchGetArticles,
+  fetchUpdateArticle,
+} from "../../../http/article/article";
 
 export const articleSliceStore = createSlice({
   name: "article_slice", // slice store들을 구분지을 이름, action data의 type의 이름, 다른 slice들과 중복되지 않는 이름
@@ -93,59 +98,89 @@ export const articleSliceStore = createSlice({
 export const articleActions = articleSliceStore.actions;
 
 export const articleThunks = {
-  init(
-    state /* todo_slice의 상태값 (Store가 관리하는 state의 복제본) */,
-    action /* state를 변경시킬 객체 (type, paylaod) */
-  ) {
-    console.log("툴킷~~ ", action.payload);
-    state.error = {};
-    //const payload = action.payload;
-    //console.log("툴킷 : ", payload);
-    state.done = action.payload.done;
-    state.nowPage = action.payload.nowPage;
-    state.body.count = action.payload.body.count;
-    state.body.list = action.payload.body.list;
-    //return { ...state, articles: { ...action.payload } };
+  init() {
+    return async (dispatcher) => {
+      const fetchResult = await fetchGetArticles(0);
+      dispatcher(articleActions.init(fetchResult));
+    };
   },
-  next(state, action) {
-    state.error = {};
-    state.done = action.payload.done;
-    state.nowPage = action.payload.nowPage;
-    state.body.count = action.payload.body.count;
-    state.body.list = action.payload.body.list;
+  next(fetchResult) {
+    return async (dispatcher) => {
+      dispatcher(articleActions.next(fetchResult));
+    };
   },
-  write(state, action) {
-    state.error = {};
-    const payload = action.payload;
-    console.log("쓰기", payload);
-    state.body.count++;
-    state.body.list.unshift({
-      id: payload.id,
-      number: Math.max(...state.body.list.map((art) => art.number)) + 1,
-      memberVO: { email: payload.email, name: payload.name },
-      crtDt: new Date().toISOString().substr(0, 10),
-      subject: payload.subject,
-      content: payload.content,
-    });
+  write(setIsWrite, newArticleId, account, subject) {
+    return async (dispatcher) => {
+      setIsWrite(false);
+      dispatcher(
+        articleActions.write({
+          id: newArticleId,
+          memberVO: { email: account.email, name: account.name },
+          viewCnt: 0,
+          crtDt: new Date().toISOString().substr(0, 10),
+          subject: subject,
+          content: "",
+        })
+      );
+      //   setRnd(Math.random());
+      this.init()(dispatcher);
+    };
   },
-  update(state, action) {
-    state.error = {};
-    const payload = action.payload;
-    console.log("수정", payload);
-    state.body.list.map((article) => {
-      if (payload.id == article.id) {
-        article.subject = payload.subject;
-        article.content = payload.content;
+  update(onClose, modifyDetail) {
+    return async (dispatcher) => {
+      dispatcher(articleActions.update(modifyDetail));
+
+      console.log("modifyDetail : ", modifyDetail);
+      window.showSpinner();
+
+      try {
+        const result = await fetchUpdateArticle(modifyDetail);
+        if (result) {
+          onClose(undefined);
+        }
+      } catch (e) {
+        if (e.message.startsWith("{")) {
+          const error = JSON.parse(e.message).error;
+          let message = "";
+          for (let err of error) {
+            message += `${err.field} ${err.defaultMessage}`;
+          }
+          alert(message);
+        } else {
+          alert(e.message);
+        }
+      } finally {
+        window.hideSpinner();
       }
-    });
+      this.init()(dispatcher);
+    };
   },
-  delete(state, action) {
-    state.error = {};
-    const payload = action.payload;
-    console.log("삭제", payload);
-    state.body.count--;
-    state.body.list.filter((article) => {
-      payload.id != article.id;
-    });
+  delete(onClose, detail, setIsDelete) {
+    return async (dispatcher) => {
+      dispatcher(articleActions.delete({ id: detail?.id }));
+
+      window.showSpinner();
+      try {
+        const deleteResult = await fetchDeleteArticle(detail?.id);
+        if (deleteResult) {
+          setIsDelete(false);
+          onClose(undefined);
+        }
+      } catch (e) {
+        if (e.message.startsWith("{")) {
+          const error = JSON.parse(e.message).error;
+          let message = "";
+          for (let err of error) {
+            message += `${err.field} ${err.defaultMessage}`;
+          }
+          alert(message);
+        } else {
+          alert(e.message);
+        }
+      } finally {
+        window.hideSpinner();
+      }
+      this.init()(dispatcher);
+    };
   },
 };

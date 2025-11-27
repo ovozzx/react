@@ -82,6 +82,7 @@ export const fetchFileDownload = async (url) => {
 };
 
 export const fetchUpdateArticle = async (modifiedArticle) => {
+  console.log("통신 id : ", modifiedArticle.id);
   const fetchResult = await fetch(
     `http://192.168.211.25:8080/api/v1/boards/${modifiedArticle.id}`,
     {
@@ -93,6 +94,8 @@ export const fetchUpdateArticle = async (modifiedArticle) => {
       },
     }
   );
+
+  console.log("통신 : ", fetchResult);
 
   if (!fetchResult.ok) {
     throw new Error("서버와 통신에 실패했습니다.");
