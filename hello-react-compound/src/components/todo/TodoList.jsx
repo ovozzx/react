@@ -7,6 +7,8 @@ import {
   useState,
 } from "react";
 import { Confirm } from "../ui/Modal";
+import { todoThunks } from "../../store/toolkit/slices/todoSlice";
+import { useDispatch } from "react-redux";
 
 const TodoListContext = createContext();
 
@@ -49,14 +51,8 @@ TodoList.Header = memo(function TodoListHeader({ count, children }) {
   );
 });
 
-TodoList.Item = memo(function TodoItem({
-  id,
-  task,
-  dueDate,
-  priority,
-  done,
-  onDone,
-}) {
+TodoList.Item = memo(function TodoItem({ id, task, dueDate, priority, done }) {
+  const dispatcher = useDispatch();
   console.log("-- -- -- TodoList.Item 실행됨");
   const confirmRef = useRef();
 
@@ -73,7 +69,7 @@ TodoList.Item = memo(function TodoItem({
   };
 
   const onClickConfirmOkHandler = () => {
-    onDone(id);
+    dispatcher(todoThunks.done(id));
     setShowConfirm(false);
   };
 

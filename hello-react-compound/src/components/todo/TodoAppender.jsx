@@ -1,13 +1,17 @@
 import { memo, useEffect, useRef, useState } from "react";
 import Alert from "../ui/Modal.jsx";
+import { useDispatch } from "react-redux";
+import { todoThunks } from "../../store/toolkit/slices/todoSlice.js";
 
 // 코드 보기
 // const isEmpty = (valueRef, message, setter) => {
 //     return valueRef.current.value === "";
 // };
 
-export default memo(function TodoAppender({ onSave }) {
+export default memo(function TodoAppender() {
   console.log("-- -- TodoAppender 실행됨");
+
+  const dispatcher = useDispatch();
 
   const [alertMessage, setAlertMessage] = useState();
 
@@ -52,10 +56,12 @@ export default memo(function TodoAppender({ onSave }) {
 
     setAlertMessage(undefined);
 
-    onSave(
-      taskRef.current.value,
-      dueDateRef.current.value,
-      priorityRef.current.value
+    dispatcher(
+      todoThunks.add(
+        taskRef.current.value,
+        dueDateRef.current.value,
+        priorityRef.current.value
+      )
     );
 
     taskRef.current.value = "";

@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { actionTypes } from "../../store/redux/ReduxStore.jsx";
 import { download } from "../../utils/download.js";
 import { isResourceOwner } from "../../utils/resourceOwner.js";
+import { articleActions } from "../../store/toolkit/slices/articleSlice.js";
 
 export default function ArticleApp() {
   // 로그인.
@@ -102,6 +103,7 @@ function Account() {
 
 function ArticleList() {
   const articles = useSelector((store) => store.articles);
+  console.log("구독 결과 : ", articles);
   const dispatcher = useDispatch();
 
   const loadMoreRef = useRef();
@@ -114,12 +116,15 @@ function ArticleList() {
   const { fetchedData, error } = useFetch(fetchGetArticles, rnd);
 
   useEffect(() => {
-    dispatcher({ type: actionTypes.ARTICLE_INIT, payload: fetchedData });
+    // dispatcher({ type: actionTypes.ARTICLE_INIT, payload: fetchedData });
+    if (fetchedData) dispatcher(articleActions.init(fetchedData)); // 조건 처리 안하면 undefined로 들어
+    // console.log("구독2 : ", dispatcher(articleActions.init(fetchedData)));
   }, [fetchedData, dispatcher]);
 
   const paginationCallback = useCallback(
     (fetchResult) => {
-      dispatcher({ type: actionTypes.ARTICLE_NEXT, payload: fetchResult });
+      // dispatcher({ type: actionTypes.ARTICLE_NEXT, payload: fetchResult });
+      dispatcher(articleActions.next(fetchResult));
     },
     [dispatcher]
   );
@@ -161,7 +166,8 @@ function ArticleList() {
         type="button"
         onClick={async () => {
           const fetchResult = await fetchGetArticles(0);
-          dispatcher({ type: actionTypes.ARTICLE_INIT, payload: fetchResult });
+          // dispatcher({ type: actionTypes.ARTICLE_INIT, payload: fetchResult });
+          dispatcher(articleActions.init(fetchResult));
           setRnd(Math.random());
         }}
       >
@@ -171,17 +177,27 @@ function ArticleList() {
         <ArticleWrite
           onPostWrite={(newArticleId, subject) => {
             setIsWrite(false);
-            dispatcher({
-              type: actionTypes.ARTICLE_WRITE,
-              payload: {
+            // dispatcher({
+            //   type: actionTypes.ARTICLE_WRITE,
+            //   payload: {
+            //     id: newArticleId,
+            //     memberVO: { email: account.email, name: account.name },
+            //     viewCnt: 0,
+            //     crtDt: new Date().toISOString().substr(0, 10),
+            //     subject: subject,
+            //     content: "",
+            //   },
+            // });
+            dispatcher(
+              articleActions.write({
                 id: newArticleId,
                 memberVO: { email: account.email, name: account.name },
                 viewCnt: 0,
                 crtDt: new Date().toISOString().substr(0, 10),
                 subject: subject,
                 content: "",
-              },
-            });
+              })
+            );
             setRnd(Math.random());
           }}
         />
@@ -384,10 +400,11 @@ function ArticleDetail({ articleId, onClose }) {
             <button
               type="button"
               onClick={async () => {
-                dispatcher({
-                  type: actionTypes.ARTICLE_UPDATE,
-                  payload: modifyDetail,
-                });
+                // dispatcher({
+                //   type: actionTypes.ARTICLE_UPDATE,
+                //   payload: modifyDetail,
+                // });
+                dispatcher(articleActions.update(modifyDetail));
 
                 window.showSpinner();
                 try {
@@ -427,10 +444,11 @@ function ArticleDetail({ articleId, onClose }) {
               doNotMove={true}
               confirmRef={deleteConfirmRef}
               onClickOk={async () => {
-                dispatcher({
-                  type: actionTypes.ARTICLE_DELETE,
-                  payload: { id: detail?.id },
-                });
+                // dispatcher({
+                //   type: actionTypes.ARTICLE_DELETE,
+                //   payload: { id: detail?.id },
+                // });
+                dispatcher(articleActions.delete({ id: detail?.id }));
 
                 window.showSpinner();
                 try {

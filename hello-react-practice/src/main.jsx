@@ -19,7 +19,7 @@ createRoot(document.getElementById("root")).render(
     <CombineApp />
     <Counter />
     <MemoApp />
-    <CallbackApp />
+    {/* <CallbackApp /> */}
     <UseMemoApp />
     <Portal />
     {/* <Portal /> 이렇게 호출하거나 부모를 호출! */}

@@ -1,4 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
+import {
+  fetchAddTodo,
+  fetchAllDoneTodo,
+  fetchDoneTodo,
+  fetchGetTodos,
+} from "../../../http/todo/todoFetch";
 
 export const todoSliceStore = createSlice({
   name: "todo_slice", // slice store들을 구분지을 이름, action data의 type의 이름, 다른 slice들과 중복되지 않는 이름
@@ -39,3 +45,53 @@ export const todoSliceStore = createSlice({
 // slice store의 action을 공개
 // {todo_slice/init() {}, todo_slice/add() {}}
 export const todoActions = todoSliceStore.actions;
+
+// Thunk
+// 액션 생성자 == 커스텀 액션
+// 여러가지 action을 하나의 action에서 처리하고 싶을 때 사용
+// - fetch와 action을 동시에 사용
+export const todoThunks = {
+  init() {
+    return async (dispatcher) => {
+      const todoList = await fetchGetTodos(); // await으로 원하는 데이터 받아오기
+      dispatcher(todoActions.init(todoList)); // toolkit으로 전환
+    };
+  },
+  add(taskName, dueDate, priority) {
+    const thunks = this;
+    return async (dispatcher) => {
+      const addResult = await fetchAddTodo(taskName, dueDate, priority);
+
+      //   setRandom(Math.random());
+
+      dispatcher(
+        todoActions.add({
+          id: addResult.taskId,
+          task: addResult.task,
+          dueDate: addResult.dueDate,
+          priority: addResult.priority,
+          done: false,
+        })
+      );
+
+      // 객체 내부에서 다른 함수나 변수나 상수에 접근하려면 this 키워드를 이용
+      thunks.init()(dispatcher);
+    };
+  },
+  done(todoId) {
+    return async (dispatcher) => {
+      const response = await fetchDoneTodo(todoId);
+      dispatcher(todoActions.done({ id: todoId })); // 안에 값이 payload에 들어감
+      this.init()(dispatcher);
+    };
+  },
+  doneAll(event) {
+    return async (dispatcher) => {
+      const isAllDone = event.currentTarget.checked;
+      if (isAllDone) {
+        await fetchAllDoneTodo();
+        dispatcher(todoActions.doneAll());
+      }
+    };
+  },
+};
