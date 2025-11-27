@@ -9,6 +9,7 @@ import {
 } from "../../http/todo/todoFetch.js";
 import { useDispatch, useSelector } from "react-redux";
 import { actionTypes } from "../../store/redux/ReduxStore.jsx";
+import { todoActions } from "../../store/toolkit/slices/todoSlice.js";
 
 const randomValue = Math.random();
 
@@ -30,7 +31,8 @@ function TodoApp() {
     (async () => {
       const todoList = await fetchGetTodos(); // await으로 원하는 데이터 받아오기
       console.log(todoList); // promise가 나옴
-      dispatcher({ type: actionTypes.TODO_INIT, payload: todoList });
+      // dispatcher({ type: actionTypes.TODO_INIT, payload: todoList }); // redux
+      dispatcher(todoActions.init(todoList)); // toolkit으로 전환
     })(); // (함수)(파라미터)
   }, [random]); // 처음에만 동작하면 될 것 적어주기 [], random 값이 바뀌면 이함수도 동작
 
@@ -52,9 +54,10 @@ function TodoApp() {
         await fetchAllDoneTodo();
         // console.log("~~~~", response);
         setRandom(Math.random());
-        dispatcher({
-          type: actionTypes.TODO_ALL_DONE,
-        });
+        // dispatcher({
+        //   type: actionTypes.TODO_ALL_DONE,
+        // });
+        dispatcher(todoActions.doneAll());
       }
     },
     [dispatcher]
@@ -73,7 +76,8 @@ function TodoApp() {
       const response = await fetchDoneTodo(todoId);
       console.log(response);
       setRandom(Math.random());
-      dispatcher({ type: actionTypes.TODO_DONE, payload: { id: todoId } });
+      // dispatcher({ type: actionTypes.TODO_DONE, payload: { id: todoId } });
+      dispatcher(todoActions.done({ id: todoId })); // 안에 값이 payload에 들어감
     },
     [dispatcher]
   );
@@ -83,16 +87,24 @@ function TodoApp() {
       const addResult = await fetchAddTodo(taskName, dueDate, priority);
       setRandom(Math.random());
       // TodoAppender는 함수만 있고, 처음에만 생성되고 바뀌지 않도록 해놔서 재실행 안됨
-      dispatcher({
-        type: actionTypes.TODO_ADD,
-        payload: {
-          // 서버가 보내준 데이터를 리액트에 추가! 서버는 id값 task_로 시작
+      // dispatcher({
+      //   type: actionTypes.TODO_ADD,
+      //   payload: {
+      //     // 서버가 보내준 데이터를 리액트에 추가! 서버는 id값 task_로 시작
+      //     id: addResult.taskId,
+      //     task: addResult.task,
+      //     dueDate: addResult.dueDate,
+      //     priority: addResult.priority,
+      //   },
+      // });
+      dispatcher(
+        todoActions.add({
           id: addResult.taskId,
           task: addResult.task,
           dueDate: addResult.dueDate,
           priority: addResult.priority,
-        },
-      });
+        })
+      );
     },
     [dispatcher]
   );

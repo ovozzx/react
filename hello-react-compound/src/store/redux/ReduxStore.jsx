@@ -56,8 +56,24 @@ const reduxReducers = (store = { todos: [], articles: {} }, action) => {
       },
     };
   } else if (type === actionTypes.ARTICLE_WRITE) {
-    // 일단 패스
-    return store;
+    return {
+      ...store,
+      articles: {
+        ...store.articles,
+        body: {
+          ...store.articles.body,
+          list: [
+            {
+              ...payload,
+              number:
+                Math.max(...store.articles.body.list.map((art) => art.number)) +
+                1,
+            },
+            ...store.articles.body.list,
+          ],
+        },
+      },
+    };
   } else if (type === actionTypes.ARTICLE_UPDATE) {
     return {
       ...store,

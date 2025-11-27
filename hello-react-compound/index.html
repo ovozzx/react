@@ -13,6 +13,31 @@
       function hideSpinner() {
         document.querySelector("#spinner").close();
       }
+
+      const observer = new IntersectionObserver((elements) => {
+        elements.forEach((elem) => {
+          if (elem.isIntersecting) {
+            observeCallback[elem.target.id]();
+          }
+        });
+      });
+
+      const observeCallback = {};
+      function addObserveCallback(id, callback) {
+        observeCallback[id] = callback;
+      }
+
+      function observe(dom) {
+        if (dom) {
+          observer.observe(dom);
+        }
+      }
+
+      function unobserve(dom) {
+        if (dom) {
+          observer.observe(dom);
+        }
+      }
     </script>
   </head>
   <body>
