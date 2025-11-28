@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
   fetchDeleteArticle,
   fetchGetArticles,
+  fetchPostArticle,
   fetchUpdateArticle,
 } from "../../../http/article/article";
 
@@ -61,7 +62,7 @@ export const articleSliceStore = createSlice({
     write(state, action) {
       state.error = {};
       const payload = action.payload;
-      console.log("쓰기", payload);
+      console.log("쓰기~ : ", payload);
       state.body.count++;
       state.body.list.unshift({
         id: payload.id,
@@ -109,24 +110,63 @@ export const articleThunks = {
       dispatcher(articleActions.next(fetchResult));
     };
   },
-  write(setIsWrite, newArticleId, account, subject) {
+  write(subject, file, content, name, email, navigate) {
     return async (dispatcher) => {
-      setIsWrite(false);
-      dispatcher(
-        articleActions.write({
-          id: newArticleId,
-          memberVO: { email: account.email, name: account.name },
-          viewCnt: 0,
-          crtDt: new Date().toISOString().substr(0, 10),
-          subject: subject,
-          content: "",
-        })
-      );
-      //   setRnd(Math.random());
-      this.init()(dispatcher);
+      window.showSpinner();
+      try {
+        // console.log("writeResult 입력 : ", writeRef);
+
+        const writeResult = await fetchPostArticle(
+          subject,
+          file.files[0],
+          content
+        );
+
+        dispatcher(
+          articleActions.write({
+            subject,
+            // file,
+            content,
+            name,
+            email,
+            id: writeResult,
+          })
+        );
+        console.log("writeResult 결과 : ", writeResult);
+      } catch (e) {
+        if (e.message.startsWith("{")) {
+          const error = JSON.parse(e.message).error;
+          let message = "";
+          for (let err of error) {
+            message += `${err.field} ${err.defaultMessage}`;
+          }
+          alert(message);
+        } else {
+          alert(e.message);
+        }
+      } finally {
+        window.hideSpinner();
+        navigate();
+      }
     };
+
+    // return async (dispatcher) => {
+    //   setIsWrite(false);
+    //   dispatcher(
+    //     articleActions.write({
+    //       id: newArticleId,
+    //       memberVO: { email: account.email, name: account.name },
+    //       viewCnt: 0,
+    //       crtDt: new Date().toISOString().substr(0, 10),
+    //       subject: subject,
+    //       content: "",
+    //     })
+    //   );
+    //   //   setRnd(Math.random());
+    //   this.init()(dispatcher);
+    // };
   },
-  update(onClose, modifyDetail) {
+  update(navigation, modifyDetail) {
     return async (dispatcher) => {
       dispatcher(articleActions.update(modifyDetail));
 
@@ -136,7 +176,7 @@ export const articleThunks = {
       try {
         const result = await fetchUpdateArticle(modifyDetail);
         if (result) {
-          onClose(undefined);
+          navigation();
         }
       } catch (e) {
         if (e.message.startsWith("{")) {
@@ -155,7 +195,7 @@ export const articleThunks = {
       this.init()(dispatcher);
     };
   },
-  delete(onClose, detail, setIsDelete) {
+  delete(navigation, detail, setIsDelete) {
     return async (dispatcher) => {
       dispatcher(articleActions.delete({ id: detail?.id }));
 
@@ -164,7 +204,7 @@ export const articleThunks = {
         const deleteResult = await fetchDeleteArticle(detail?.id);
         if (deleteResult) {
           setIsDelete(false);
-          onClose(undefined);
+          navigation();
         }
       } catch (e) {
         if (e.message.startsWith("{")) {

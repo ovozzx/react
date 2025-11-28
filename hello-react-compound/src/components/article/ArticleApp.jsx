@@ -19,15 +19,11 @@ import {
   articleActions,
   articleThunks,
 } from "../../store/toolkit/slices/articleSlice.js";
+import { Link } from "react-router-dom";
 
 export default function ArticleApp() {
   // 로그인.
-  const { account, login } = useContext(UserContext);
-
-  const token = localStorage.getItem("_token_");
-  if (token && !account) {
-    login();
-  }
+  const { account } = useContext(UserContext);
 
   return (
     <div className="wrapper">
@@ -111,8 +107,7 @@ function ArticleList() {
 
   const loadMoreRef = useRef();
 
-  const [isWrite, setIsWrite] = useState(false);
-  const [articleId, setArticleId] = useState();
+  // const [isWrite, setIsWrite] = useState(false);
 
   const [rnd, setRnd] = useState(Math.random());
 
@@ -157,13 +152,9 @@ function ArticleList() {
   //   paginationCallback
   // );
 
-  const { account } = useContext(UserContext);
-
   return (
     <>
-      <button type="button" onClick={setIsWrite.bind(this, true)}>
-        게시글 작성
-      </button>
+      <Link to="/write">게시글 작성</Link>
       <button
         type="button"
         onClick={() => {
@@ -172,7 +163,7 @@ function ArticleList() {
       >
         게시글 다시 조회
       </button>
-      {isWrite && (
+      {/* {isWrite && (
         <ArticleWrite
           onPostWrite={(newArticleId, subject) => {
             dispatcher(
@@ -180,8 +171,8 @@ function ArticleList() {
             );
           }}
         />
-      )}
-      {!isWrite && (
+      )} */}
+      {
         <>
           <table className={articleListStyle.tableList}>
             <thead>
@@ -197,8 +188,8 @@ function ArticleList() {
               {articles?.body?.list.map((item) => (
                 <tr key={item.id}>
                   <td>{item.number}</td>
-                  <td onClick={setArticleId.bind(this, item.id)}>
-                    {item.subject}
+                  <td>
+                    <Link to={`/detail/${item.id}`}>{item.subject}</Link>
                   </td>
                   <td>{item.viewCnt}</td>
                   <td>{item.memberVO.name}</td>
@@ -212,204 +203,75 @@ function ArticleList() {
               Load more...
             </div>
           )}
-          {articleId && (
-            <ArticleDetail
-              articleId={articleId}
-              onClose={(articleId) => {
-                setArticleId(articleId);
-                setRnd(Math.random());
-              }}
-            />
-          )}
         </>
-      )}
+      }
     </>
   );
 }
 
-function ArticleWrite({ onPostWrite }) {
-  const writeRef = useRef({
-    subject: undefined,
-    file: undefined,
-    content: undefined,
-  });
+// export function ArticleWrite({ onPostWrite }) {
+//   const writeRef = useRef({
+//     subject: undefined,
+//     file: undefined,
+//     content: undefined,
+//   });
 
-  const onSaveClickHandler = useCallback(async () => {
-    // fetch - 글 작성.
-    window.showSpinner();
-    try {
-      const writeResult = await fetchPostArticle(
-        writeRef.current.subject.value,
-        writeRef.current.file.files[0],
-        writeRef.current.content.value
-      );
-      onPostWrite(writeResult, writeRef.current.subject.value);
-    } catch (e) {
-      if (e.message.startsWith("{")) {
-        const error = JSON.parse(e.message).error;
-        let message = "";
-        for (let err of error) {
-          message += `${err.field} ${err.defaultMessage}`;
-        }
-        alert(message);
-      } else {
-        alert(e.message);
-      }
-    } finally {
-      window.hideSpinner();
-    }
-  }, [onPostWrite]);
+//   const onSaveClickHandler = useCallback(async () => {
+//     // fetch - 글 작성.
+//     window.showSpinner();
+//     try {
+//       const writeResult = await fetchPostArticle(
+//         writeRef.current.subject.value,
+//         writeRef.current.file.files[0],
+//         writeRef.current.content.value
+//       );
+//       onPostWrite(writeResult, writeRef.current.subject.value);
+//     } catch (e) {
+//       if (e.message.startsWith("{")) {
+//         const error = JSON.parse(e.message).error;
+//         let message = "";
+//         for (let err of error) {
+//           message += `${err.field} ${err.defaultMessage}`;
+//         }
+//         alert(message);
+//       } else {
+//         alert(e.message);
+//       }
+//     } finally {
+//       window.hideSpinner();
+//     }
+//   }, [onPostWrite]);
 
-  return (
-    <div>
-      <div>
-        <input
-          type="text"
-          ref={(element) => (writeRef.current.subject = element)}
-        />
-      </div>
-      <div>
-        <input
-          type="file"
-          ref={(element) => (writeRef.current.file = element)}
-        />
-      </div>
-      <div>
-        <textarea
-          ref={(element) => (writeRef.current.content = element)}
-        ></textarea>
-      </div>
+//   return (
+//     <div>
+//       <div>
+//         <input
+//           type="text"
+//           ref={(element) => (writeRef.current.subject = element)}
+//         />
+//       </div>
+//       <div>
+//         <input
+//           type="file"
+//           ref={(element) => (writeRef.current.file = element)}
+//         />
+//       </div>
+//       <div>
+//         <textarea
+//           ref={(element) => (writeRef.current.content = element)}
+//         ></textarea>
+//       </div>
 
-      <button type="button" onClick={onSaveClickHandler}>
-        저장하기
-      </button>
-      <button type="button" onClick={onPostWrite}>
-        취소하기
-      </button>
-    </div>
-  );
-}
+//       <button type="button" onClick={onSaveClickHandler}>
+//         저장하기
+//       </button>
+//       <button type="button" onClick={onPostWrite}>
+//         취소하기
+//       </button>
+//     </div>
+//   );
+// }
 
-function ArticleDetail({ articleId, onClose }) {
-  const dispatcher = useDispatch();
-
-  const detailRef = useRef();
-  const deleteConfirmRef = useRef();
-
-  const [modifyDetail, setModifyDetail] = useState();
-
-  const [isModify, setIsModify] = useState(false);
-  const [isDelete, setIsDelete] = useState(false);
-
-  const { account } = useContext(UserContext);
-
-  const fetchArticle = useCallback(fetchGetArticle.bind(this, articleId), []);
-
-  const { fetchedData: detail, error } = useFetch(fetchArticle, isDelete);
-
-  useEffect(() => {
-    setModifyDetail({ ...detail });
-    detailRef.current.open();
-
-    if (isDelete) {
-      deleteConfirmRef.current.open();
-    }
-  }, [detail, isDelete]);
-
-  return (
-    <Alert alertRef={detailRef} onClose={onClose.bind(this, undefined)}>
-      <div>
-        {!isModify ? (
-          detail?.subject
-        ) : (
-          <input
-            type="text"
-            value={modifyDetail?.subject}
-            onChange={(event) => {
-              const value = event.currentTarget.value;
-              setModifyDetail((prevDetail) => {
-                return { ...prevDetail, subject: value };
-              });
-            }}
-          />
-        )}
-      </div>
-      <div>
-        {detail?.memberVO.name} ({detail?.memberVO.email})
-      </div>
-      {detail?.fileGroupVO && (
-        <div>
-          {detail.fileGroupVO.file.map(
-            ({ fileDisplayName, fileDownloadCount, fileGroupId, fileId }) => (
-              <div
-                key={fileId}
-                data-file-group-id={fileGroupId}
-                data-file-id={fileId}
-                data-article-id={articleId}
-                onClick={download.bind(
-                  this,
-                  fileDisplayName,
-                  `http://192.168.211.25:8080/file/${articleId}/${fileGroupId}/${fileId}`
-                )}
-              >
-                {fileDisplayName} ({fileDownloadCount})
-              </div>
-            )
-          )}
-        </div>
-      )}
-      <div>
-        {!isModify ? (
-          detail?.content
-        ) : (
-          <textarea
-            value={modifyDetail?.content}
-            onChange={(event) => {
-              const value = event.currentTarget.value;
-              setModifyDetail((prevDetail) => {
-                return { ...prevDetail, content: value };
-              });
-            }}
-          ></textarea>
-        )}
-      </div>
-      {isResourceOwner(account, detail?.memberVO.email) && (
-        <div>
-          {isModify && (
-            <button
-              type="button"
-              onClick={() => {
-                dispatcher(articleThunks.update(onClose, modifyDetail));
-              }}
-            >
-              저장
-            </button>
-          )}
-          {!isModify && (
-            <button type="button" onClick={setIsModify.bind(this, true)}>
-              수정
-            </button>
-          )}
-          <button type="button" onClick={setIsDelete.bind(this, true)}>
-            삭제
-          </button>
-          {isDelete && (
-            <Confirm
-              doNotMove={true}
-              confirmRef={deleteConfirmRef}
-              onClickOk={() => {
-                dispatcher(articleThunks.delete(onClose, detail, setIsDelete));
-              }}
-              onClickCancel={setIsDelete.bind(this, false)}
-            >
-              <div>정말 삭제하시겠습니까?</div>
-            </Confirm>
-          )}
-        </div>
-      )}
-    </Alert>
-  );
-}
 // import articleListStyle from "./ArticleList.module.css";
 // // css 이름 원하는대로 작성
 // import {
