@@ -15,9 +15,10 @@
  * 문법 : const memoizedValue = useMemo(() => compute(), [deps]);
  */
 
+import { useEffect } from "react";
 import { memo, useCallback, useMemo, useState } from "react";
 
-const Child = memo(({ value }) => {
+const MemoChild = memo(({ value }) => {
   console.log("Child render 실행!");
   return <div>{value}</div>;
 });
@@ -30,46 +31,83 @@ const Child = memo(({ value }) => {
 
 //export memo(Child);
 
+const UseCallbackChild = memo(({ onCallback }) => {
+  // 자식 컴포넌트가 memo()로 감싸져 있지 않으면 리렌더를 막지 못함
+  console.log("콜백 리렌덩링");
+  return <div onClick={onCallback}>CallbackChild</div>;
+});
+
+const UseMemoChild = memo(() => {
+  console.log("객체 린데러링");
+});
+
 export default function MemoApp() {
   const [count, setCount] = useState(0);
+
+  const onSetChangeHandler = useCallback(() => {
+    console.log("캐싱 함수");
+  }, []);
+
+  const memoObj = useMemo(() => ({ value: 1 }), []);
+  // useMemo는 ‘함수 → 값 리턴’ 구조가 필수이다.
+  // () : 즉시 반환
+  // {} : 반드시 return을 직접 써야 함
+
+  // useEffect : 렌더 후에 실행되는 사이드 이펙트(부수효과) 함수를 등록하고, deps 배열을 통해 언제 실행·정리할지 제어하는 훅
+  useEffect(() => {
+    console.log("use Effect");
+  }, []); // []이면 처음에만 실행, state 바뀌어도 처음 1번만 => 마운트 시 1회 실행
+
+  // eslint-disable-next-line no-undef
+  fetchTodo();
+  Todo();
+
   return (
     <div>
-      <Child value="Hello" />
-      <CallbackApp />
-
+      <MemoChild value="Hello" />
+      {/* 부모 state가 바뀌어도 해당 자식은 props가 변경된 것이 아니기 때문에 리렌더 안됨! */}
+      <UseCallbackChild onCallback={onSetChangeHandler} />
+      <UseMemoChild memoObj={memoObj} />
       <button onClick={() => setCount(count + 1)}>state 변경!</button>
     </div>
   );
 }
 
-export function CallbackApp() {
-  const [count, setCount] = useState(0);
+/**
+ * fetch : fetch는 네트워크 요청을 보내고, Promise로 응답을 받는 브라우저 내장 API
+ */
 
-  const handleClick = useCallback(() => {
-    console.log("함수 생성!");
-  }, []);
-
-  //   const handleClick = () => {
-  //     console.log("handleClick : ", handleClick);
-  //     console.log("함수 생성!");
-  //   };
-  // useCallback 빼도 MemoApp 버튼 클릭 시 console 출력 안됨
-
-  return <button onClick={handleClick}>useCallback</button>;
+async function fetchTodo() {
+  try {
+    const response = await fetch(
+      "https://jsonplaceholder.typicode.com/todos/1"
+    ); // Promise 반환
+    // const data = await response;
+    const data = await response.json(); // 서버에서 받은 JSON 문자열을 JS에서 바로 쓸 수 있는 객체(Object)나 배열(Array)로 변환
+    console.log("결과:", data);
+  } catch (err) {
+    console.error("에러 발생:", err);
+  }
 }
 
-export function UseMemoApp() {
-  const [num, setNum] = useState(1);
+function Todo() {
+  useEffect(() => {
+    try {
+      const postData = async () => {
+        const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }, // 서버에 보내는 데이터 형식(Content-Type)을 알려주기 위해 사용 (필수)
+          body: JSON.stringify({ title: "hello", body: "world", useId: 1 }),
+          // 서버로 보낼 실제 데이터. JS 객체를 바로 보내면 안 되고, JSON.stringify()로 문자열(JSON)로 변환해야 함
+        });
 
-  const double = useMemo(() => {
-    console.log("Calculating...");
-    return num * 2;
-  }, [num]);
+        const data = await res.json();
+        console.log("POST 결과:", data); // await를 붙이지 않으면, 완료를 기다리지 않고 콘솔 출력해버림 => Promise { <pending> } 출력
+      };
 
-  return (
-    <div>
-      {double}
-      <button onClick={() => setNum(num + 1)}>UseMemo 클릭!</button>
-    </div>
-  );
+      postData();
+    } catch (err) {
+      console.error("POST 에러:", err);
+    }
+  }, []);
 }

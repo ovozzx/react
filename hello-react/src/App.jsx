@@ -1,36 +1,35 @@
-import TodoList from "./components/todo/TodoList.jsx";
-import TodoProvider from "./contexts/TodoContextProvider.jsx";
-// import TodoProvider from "./contexts/TodoContextProvider.jsx";
-// import { useEffect, useRef, useState } from "react";
-// import Alert from "./components/ui/Modal.jsx";
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
 
 function App() {
-  // const modalRef = useRef(); // Alert 내 dialog 묶음이 들어감
-
-  // const onButtonClickHandler = () => {
-  //   console.log(modalRef);
-  //   modalRef.current.showModal(); // 모달 표시
-  //   // setShowModal((prevState) => !prevState); // 모달 표시
-  // };
+  const [count, setCount] = useState(0)
 
   return (
-    <div className="wrapper">
-      <header>React Todo</header>
-      <TodoProvider>
-        <TodoList />
-      </TodoProvider>
-      {/* 이렇게 하면 TodoList 이하에 있는 애들은 모두 state 구독 가능해짐 */}
-      {/* <button type="button" onClick={onButtonClickHandler}>
-        Show Modal
-      </button> */}
-      {/* <Alert alertRef={modalRef}>
-        <div>
-          <h3>컴포넌트의 이름을 입력하세요</h3>
-        </div>
-      </Alert> */}
-      {/* children으로 전달 => 싱글라인 태그 안됨 */}
-    </div>
-  );
+    <>
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.jsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
+    </>
+  )
 }
 
-export default App;
+export default App

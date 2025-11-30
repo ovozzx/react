@@ -8,9 +8,9 @@ import CartApp from "./components/cart/CartApp.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    {/* <App /> */}
     {/* <PropsApp /> */}
-    {/* <CalcApp /> */}
+    <CalcApp />
     {/* <CartApp /> */}
   </StrictMode>
 );
